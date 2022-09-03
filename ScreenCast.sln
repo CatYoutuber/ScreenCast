@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32210.238
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScreenCast", "ScreenCast.csproj", "{225B46BD-0D66-4715-A6EE-C576BD28F553}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{225B46BD-0D66-4715-A6EE-C576BD28F553}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{225B46BD-0D66-4715-A6EE-C576BD28F553}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{225B46BD-0D66-4715-A6EE-C576BD28F553}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{225B46BD-0D66-4715-A6EE-C576BD28F553}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DF89A0D2-DC18-4BF6-9CEE-08DD2F3E5B50}
+	EndGlobalSection
+EndGlobal
