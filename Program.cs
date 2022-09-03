@@ -12,6 +12,7 @@ using System.Speech.Synthesis;
 using System.Drawing.Drawing2D;
 using System.Security.Principal;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace ScreenCast
 {
@@ -91,15 +92,24 @@ namespace ScreenCast
             Rectangle bounds = Screen.PrimaryScreen.Bounds;
             Image img = new Bitmap(bounds.Width,bounds.Height);
             Graphics g = Graphics.FromImage(img);
-            g.CopyFromScreen(0, 0, bounds.X, bounds.Y, bounds.Size,CopyPixelOperation.SourceCopy);
-            g.DrawImage(Properties.Resources.cursor_on_the_cheap, Cursor.Position);
-            return resizeImage(img,new Size((int)(bounds.Width * shrinkScale), (int)(bounds.Height * shrinkScale)),InterpolationMode.NearestNeighbor);
+            g.CopyFromScreen(0, 0, bounds.X, bounds.Y, bounds.Size, CopyPixelOperation.SourceCopy);
+
+            Win32.CURSORINFO pci = new Win32.CURSORINFO();
+            pci.cbSize = Marshal.SizeOf(typeof(Win32.CURSORINFO));
+            Win32.GetCursorInfo(ref pci);
+
+            IntPtr hDC = g.GetHdc();
+            Win32.DrawIconEx(hDC, pci.ptScreenPos.x, pci.ptScreenPos.y, pci.hCursor, 0, 0, 0, IntPtr.Zero, 3); //DI_NOMAL = 0x0003
+            g.ReleaseHdc();
+
+            //g.DrawImage(Properties.Resources.cursor_on_the_cheap, Cursor.Position);
+            return resizeImage(img,new Size((int)(bounds.Width * shrinkScale), (int)(bounds.Height * shrinkScale)));
         }
-        static Image resizeImage(Image imgToResize, Size size,InterpolationMode im)
+        static Image resizeImage(Image imgToResize, Size size)
         {
             Image img = new Bitmap(size.Width, size.Height);
             Graphics g = Graphics.FromImage(img);
-            g.InterpolationMode = im;
+            g.InterpolationMode = InterpolationMode.NearestNeighbor;
             g.CompositingMode = CompositingMode.SourceCopy;
             g.CompositingQuality = CompositingQuality.HighQuality;
             g.DrawImage(imgToResize, 0, 0, size.Width, size.Height);
