@@ -3,14 +3,11 @@ using System.IO;
 using System.Net;
 using System.Drawing;
 using System.Threading;
-using System.Reflection;
-using System.Diagnostics;
 using System.Net.Sockets;
 using System.Windows.Forms;
 using System.Drawing.Imaging;
 using System.Speech.Synthesis;
 using System.Drawing.Drawing2D;
-using System.Security.Principal;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
@@ -23,38 +20,37 @@ namespace ScreenCast
         static HttpListenerRequest request;
         static HttpListenerResponse response;
         static SpeechSynthesizer synthesizer = new SpeechSynthesizer();
+        static readonly bool NoTTS = false; //dlya otladki
         static void Main(string[] args)
         {
-            if(!new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
-            {
-                Process.Start(new ProcessStartInfo(Assembly.GetExecutingAssembly().Location) { Verb = "runas" });
-                Environment.Exit(0);
-            }
             synthesizer.SelectVoice(synthesizer.GetInstalledVoices()[Properties.Settings.Default.VoiceIndex].VoiceInfo.Name);
             synthesizer.SetOutputToDefaultAudioDevice();
             synthesizer.Rate = 2;
 
             listener.Prefixes.Add("http://+:8080/");
             listener.Prefixes.Add("http://*:8080/");
-            listener.AuthenticationSchemes = AuthenticationSchemes.Anonymous;
             new Thread(new ThreadStart(NetworkThread)).Start();
-            synthesizer.Speak("Сервер запущен на порту 8080");
-            while(true)
+            if (!NoTTS)
             {
+                synthesizer.Speak("Сервер запущен на порту 8080");
+
                 List<IPAddress> adresses = new List<IPAddress>();
                 foreach (IPAddress ip in Dns.GetHostEntry(Dns.GetHostName()).AddressList)
                     if (ip.AddressFamily == AddressFamily.InterNetwork && ip.ToString().StartsWith("192.168."))
                         adresses.Add(ip);
-                synthesizer.SpeakAsync("Список локальных адресов компьютера, " + adresses.Count + " штук.");
-                if(Console.ReadKey().Key == ConsoleKey.Escape) 
-                { 
-                    synthesizer.SpeakAsyncCancelAll(); 
-                    break; 
+                while (true)
+                {
+                    synthesizer.SpeakAsync("Список локальных адресов компьютера, " + adresses.Count + " штук. Нажмите ВВОД");
+                    if (Console.ReadKey().Key == ConsoleKey.Escape)
+                    {
+                        synthesizer.SpeakAsyncCancelAll();
+                        break;
+                    }
+                    foreach (IPAddress ip in adresses)
+                        synthesizer.Speak(ip.ToString().Replace(".", " "));
+                    synthesizer.Speak("Чтобы прослушать ещё раз нажмите ВВОД, или другую клавишу чтобы начать работу");
+                    if (Console.ReadKey().Key != ConsoleKey.Enter) break;
                 }
-                foreach(IPAddress ip in adresses)
-                    synthesizer.Speak(ip.ToString().Replace("."," "));
-                synthesizer.Speak("Чтобы прослушать ещё раз нажмите ВВОД, или другую клавишу чтобы начать работу");
-                if (Console.ReadKey().Key != ConsoleKey.Enter) break;
             }
         }
         protected static void NetworkThread()
@@ -62,29 +58,42 @@ namespace ScreenCast
             listener.Start();
             while (true)
 			{
-				ctx = listener.GetContext();
-				request = ctx.Request;
-				response = ctx.Response;
-				Stream os = response.OutputStream;
-                Console.WriteLine("New Request");
-                Console.WriteLine("User: " + request.UserHostAddress);
-                Console.WriteLine("Path: " + request.Url.ToString() + "\n");
-                if(request.Url.AbsolutePath.Contains("favicon"))
+                try
                 {
-                    Properties.Resources.desktop_icon.Save(os,ImageFormat.Png);
-                    os.Close();
-                    continue;
-                }
-                double ss = 0.5f;
-                string query = request.Url.Query;
-                bool parsed = true;
-                if (query.Contains("?ss=")) 
-                    parsed = double.TryParse(query.Substring("?ss=".Length), out ss);
-                if (parsed)
-                    getFromScreen((float)ss).Save(os,ImageFormat.Jpeg);
-                else
-                    SystemIcons.Error.ToBitmap().Save(os,ImageFormat.Png);
-				os.Close();
+                    ctx = listener.GetContext();
+                    request = ctx.Request;
+                    response = ctx.Response;
+                    Stream os = response.OutputStream;
+                    Console.WriteLine("New Request");
+                    Console.WriteLine("Path: " + request.Url.ToString() + "\n");
+
+                    if (request.Url.AbsolutePath.Contains("favicon"))
+                    {
+                        Properties.Resources.desktop_icon.Save(os, ImageFormat.Png);
+                        os.Close();
+                        continue;
+                    }
+                    if (!request.Url.AbsolutePath.Contains("img"))
+                    {
+                        StreamWriter sw = new StreamWriter(os);
+                        sw.WriteLine(Properties.Resources.main);
+                        sw.Close();
+                        os.Close();
+                    }
+                    else
+                    {
+                        double ss = 0.5f;
+                        bool parsed = true;
+                        if (request.QueryString.Get("ss") != null)
+                            parsed = double.TryParse(request.QueryString.Get("ss"), out ss);
+                        if (parsed)
+                            getFromScreen((float)ss).Save(os, ImageFormat.Jpeg);
+                        else
+                            SystemIcons.Error.ToBitmap().Save(os, ImageFormat.Png);
+                        os.Close();
+                    }
+                } catch (Exception ex) { 
+                    Console.WriteLine(ex.ToString()); synthesizer.SpeakAsync(ex.Message); }
 			}
         }
         static Image getFromScreen(float shrinkScale)

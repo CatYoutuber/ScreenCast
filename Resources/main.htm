@@ -1,0 +1,22 @@
+<html>
+	<head>
+		<title>ScreenCast</title>
+	</head>
+	<body onload="load()">
+		<a href="https://catyoutuber.github.io">ScreenCast by CatYoutuber TV</a><br />
+		<input type="checkbox" id="hqCheck" />High Quality
+		<input type="checkbox" id="update" checked="checked"/>Update<br />
+		<img id="image" src="/img/" />
+		<script>
+			function load() {
+				var hq = document.getElementById("hqCheck");
+				var upd = document.getElementById("update");
+				var img = document.getElementById("image");
+				setInterval(function () {
+					if(update.checked)
+						img.src = "/img?" + (hq.checked ? "ss=1&" : "") + "rand=" + Math.random();
+				}, 1000 / 15);
+			}
+		</script>
+	</body>
+</html>

@@ -61,6 +61,15 @@ namespace ScreenCast.Properties {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на .
+        /// </summary>
+        internal static string auth_err {
+            get {
+                return ResourceManager.GetString("auth_err", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
         internal static System.Drawing.Bitmap cursor_on_the_cheap {
@@ -77,6 +86,31 @@ namespace ScreenCast.Properties {
             get {
                 object obj = ResourceManager.GetObject("desktop_icon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;html&gt;
+        ///	&lt;head&gt;
+        ///		&lt;title&gt;ScreenCast&lt;/title&gt;
+        ///	&lt;/head&gt;
+        ///	&lt;body onload=&quot;load()&quot;&gt;
+        ///		&lt;script&gt;
+        ///			function load() {
+        ///				var hq = document.getElementById(&quot;hqCheck&quot;);
+        ///				var img = document.getElementById(&quot;image&quot;);
+        ///				setInterval(function() {
+        ///					img.src = &quot;/i?&quot; + (hq.checked ? &quot;ss=1&amp;&quot; : &quot;&quot;) + &quot;rand=&quot; + Math.random();
+        ///				}, 1000 / 15);
+        ///			}
+        ///		&lt;/script&gt;
+        ///		&lt;a href=&quot;https://catyoutuber.github.io&quot;&gt;CatYoutuber TV (author)&lt;/a&gt;&lt;br/&gt;
+        ///		&lt;input type=&quot;checkbox&quot; id=&quot;hqCheck&quot; /&gt;High Quality&lt;br/&gt;
+        ///		&lt;img id=&quot;imag [остаток строки не уместился]&quot;;.
+        /// </summary>
+        internal static string main {
+            get {
+                return ResourceManager.GetString("main", resourceCulture);
             }
         }
     }
